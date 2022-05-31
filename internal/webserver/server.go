@@ -3,17 +3,16 @@ package webserver
 import (
 	"context"
 	"github.com/Mortimor1/mikromon-discovery/internal/config"
-	"github.com/Mortimor1/mikromon-discovery/internal/subnet"
 	"github.com/Mortimor1/mikromon-discovery/internal/webserver/handlers"
 	"github.com/Mortimor1/mikromon-discovery/pkg/logging"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"time"
 )
 
 type Server struct {
-	httpServer       *http.Server
-	subnetRepository *subnet.SubnetRepository
+	httpServer *http.Server
 }
 
 func (s *Server) Run(cfg *config.Config) error {
@@ -26,10 +25,15 @@ func (s *Server) Run(cfg *config.Config) error {
 	router.Use(handlers.Middleware)
 	router.Use(handlers.LoggingMiddleware)
 
-	subnetHandler := subnet.NewSubnetHandler(logger, s.subnetRepository)
+	reg := NewMetricsRegistry()
+	router.Handle("/metrics", promhttp.HandlerFor(
+		reg,
+		promhttp.HandlerOpts{
+			EnableOpenMetrics: true,
+		},
+	))
 
 	logger.Info("Register handlers")
-	subnetHandler.Register(router)
 
 	s.httpServer = &http.Server{
 		Addr:           cfg.Http.BindIp + ":" + cfg.Http.Port,
@@ -42,14 +46,6 @@ func (s *Server) Run(cfg *config.Config) error {
 	// Start http server
 	logger.Infof("Server listening on %s:%s", cfg.Http.BindIp, cfg.Http.Port)
 	return s.httpServer.ListenAndServe()
-}
-
-func NewHttpServer(subnetRepository *subnet.SubnetRepository) *Server {
-	s := Server{
-		httpServer:       nil,
-		subnetRepository: subnetRepository,
-	}
-	return &s
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {

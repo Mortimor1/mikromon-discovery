@@ -1,8 +1,0 @@
-debug: true
-http:
-  bind_ip: "0.0.0.0"
-  port: "8080"
-db:
-  mongo:
-    url: "mongodb://mikromon:213WJN8gQ12@10.10.0.10:27017"
-    database: "mikromon"
