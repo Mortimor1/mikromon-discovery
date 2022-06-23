@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/Mortimor1/mikromon-discovery/internal/config"
 	"github.com/Mortimor1/mikromon-discovery/pkg/logging"
+	"github.com/Mortimor1/mikromon-discovery/pkg/utils"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -81,10 +82,10 @@ func (d *Discovery) loadSubnets() *[]Subnet {
 	return nil
 }
 
-func (d *Discovery) createDevice(host string) *Device {
+func (d *Discovery) createDevice(host int64) *Device {
 	device := Device{
 		IpAddress: host,
-		Name:      "(" + host + ")",
+		Name:      "(" + utils.IntToIp(host).String() + ")",
 		State:     true,
 		Status:    "OK",
 	}

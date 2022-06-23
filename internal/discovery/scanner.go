@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"fmt"
+	"github.com/Mortimor1/mikromon-discovery/pkg/utils"
 	"github.com/tatsushid/go-fastping"
 	"net"
 	"time"
@@ -30,8 +31,8 @@ func inc(ip net.IP) {
 	}
 }
 
-func scan(subnets []string) ([]string, error) {
-	var alives []string
+func scan(subnets []string) ([]int64, error) {
+	var alives []int64
 
 	for _, subnet := range subnets {
 		hosts, _ := Hosts(subnet)
@@ -44,7 +45,7 @@ func scan(subnets []string) ([]string, error) {
 			p.AddIPAddr(ra)
 
 			p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
-				alives = append(alives, addr.String())
+				alives = append(alives, utils.IpToInt(addr.IP))
 				fmt.Printf("IP Addr: %s receive, RTT: %v\n", addr.String(), rtt)
 			}
 
